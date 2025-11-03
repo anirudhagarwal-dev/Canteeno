@@ -1,7 +1,4 @@
-import basket_icon from './basket_icon.png'
-import logo from './logo.png'
-import header_img from './header_img.png'
-import search_icon from './search_icon.png'
+
 import menu_1 from './menu_1.png'
 import menu_2 from './menu_2.jpg'
 import menu_3 from './menu_3.jpg'
@@ -33,44 +30,12 @@ import food_21 from './food_21.png'
 import food_22 from './food_22.png'
 import food_23 from './food_23.png'
 import food_24 from './food_24.jpg'
+import food_25 from './food_25.jpg'
+import food_26 from './food_26.jpg'
+import food_27 from './food_27.jpg'
 
-import add_icon_white from './add_icon_white.png'
-import add_icon_green from './add_icon_green.png'
-import remove_icon_red from './remove_icon_red.png'
-import app_store from './app_store.png'
-import play_store from './play_store.png'
-import linkedin_icon from './linkedin_icon.png'
-import facebook_icon from './facebook_icon.png'
-import twitter_icon from './twitter_icon.png'
-import cross_icon from './cross_icon.png'
-import selector_icon from './selector_icon.png'
-import rating_starts from './rating_starts.png'
-import profile_icon from './profile_icon.png'
-import bag_icon from './bag_icon.png'
-import logout_icon from './logout_icon.png'
-import parcel_icon from './parcel_icon.png'
 
-export const assets = {
-    logo,
-    basket_icon,
-    header_img,
-    search_icon,
-    rating_starts,
-    add_icon_green,
-    add_icon_white,
-    remove_icon_red,
-    app_store,
-    play_store,
-    linkedin_icon,
-    facebook_icon,
-    twitter_icon,
-    cross_icon,
-    selector_icon,
-    profile_icon,
-    logout_icon,
-    bag_icon,
-    parcel_icon
-}
+
 
 export const menu_list = [
     {
@@ -125,112 +90,119 @@ export const food_list = [
         image: food_4,
         price: 45,
         category: "Snacks"
-    }, {
+    },
+    {
         _id: "5",
+        name: "Pav Bhaji",
+        image: food_27,
+        price: 45,
+        category: "Snacks"
+    }, {
+        _id: "6",
         name: "Maggi",
         image: food_5,
         price: 35,
         category: "Snacks"
     }, {
-        _id: "6",
+        _id: "7",
         name: "Peri Peri Fries",
         image: food_6,
         price: 50,
         category: "Snacks"
     }, {
-        _id: "7",
+        _id: "8",
         name: "Chai",
         image: food_7,
         price: 15,
         category: "Beverges"
     }, {
-        _id: "8",
+        _id: "9",
         name: "Cold drinks",
         image: food_8,
         price: 20,
         category: "Beverges"
     }, {
-        _id: "9",
+        _id: "10",
         name: "Lassi",
         image: food_9,
         price: 25,
         category: "Beverges"
     }, {
-        _id: "10",
+        _id: "11",
         name: "Coffee",
         image: food_10,
         price: 30,
          category: "Beverges"
         
     }, {
-        _id: "11",
+        _id: "12",
         name: "Milkshake",
         image: food_11,
         price: 50,
          category: "Beverges"
     }, 
     {
-        _id: "12",
+        _id: "13",
         name: "Vegan Sandwich",
         image: food_12,
         price: 35,
         category: "Sandwich"
     }, {
-        _id: "13",
+        _id: "14",
         name: "Grilled Sandwich",
         image: food_13,
         price: 40,
         category: "Sandwich"
     }, {
-        _id: "14",
+        _id: "15",
         name: "Bread Sandwich",
         image: food_14,
         price: 24,
         category: "Sandwich"
     }, {
-        _id: "15",
+        _id: "16",
         name: "Veg Noodles",
         image: food_15,
         price: 40,
          category: "Noodles"
     }, {
-        _id: "16",
+        _id: "17",
         name: "Hakka Noodles",
         image: food_16,
         price: 45,
         category: "Noodles"
     }, {
-        _id: "17",
+        _id: "18",
         name: "Fried Rice",
         image: food_17,
         price: 50,
         category: "Noodles"
     }, {
-        _id: "18",
+        _id: "19",
         name: "Cheese Pizza",
         image: food_18,
         price: 65,
         category: "Pizza"
     }, {
-        _id: "19",
+        _id: "20",
         name: "Tomato Pizza",
         image: food_19,
         price: 70,
        category: "Pizza"
     }, {
-        _id: "20",
+        _id: "21",
         name: "Corn Pizza",
         image: food_20,
         price: 75,
         category: "Pizza"
     }, {
-        _id: "21",
+        _id: "22",
         name: "Chole bature",
         image: food_21,
         price: 50,
        category: "Special"
     }, {
-        _id: "22",
+        _id: "27",
         name: "Rajma Chawal",
         image: food_22,
         price: 50,
@@ -249,5 +221,20 @@ export const food_list = [
         image: food_24,
         price: 40,
         category: "Special"
+    },
+    {
+         _id: "25",
+        name: "Masala Dosa",
+        image: food_25,
+        price: 70,
+        category: "Special"
+    },
+    {
+         _id: "26",
+        name: "Idli Sambhar",
+        image: food_26,
+        price: 50,
+        category: "Special"
     }
+    
 ]
