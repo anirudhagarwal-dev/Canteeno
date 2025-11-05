@@ -5,12 +5,12 @@
     margin: 30px 0px;
     padding: 25px;
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border: 2px solid #2563eb;
+    border: 2px solid #D96F32;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
 }
 .loyalty-program h3 {
-    color: #2563eb;
+    color: #D96F32;
     margin-bottom: 15px;
     font-size: 22px;
 }
@@ -40,7 +40,7 @@
 }
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    background: linear-gradient(90deg, #D96F32 0%, #e68a4d 100%);
     border-radius: 15px;
     transition: width 0.5s ease;
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
@@ -59,13 +59,13 @@
     font-size: 14px;
     padding: 10px 20px;
     color: #454545;
-    border: 1px solid #2563eb;
+    border: 1px solid #D96F32;
 }
 .my-orders-order img{
     width: 50px;
 }
 .my-orders-order p span{
-    color: #2563eb;
+    color: #D96F32;
 }
 .my-orders-order p b{
     font-weight: 500;

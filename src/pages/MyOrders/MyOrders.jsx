@@ -36,7 +36,7 @@ const MyOrders = () => {
       
       {/* Loyalty Program Display */}
       <div className="loyalty-program">
-        <h3>🎉 Loyalty Reward Program</h3>
+        <h3>🎉 Foodie Rewards</h3>
         <p style={{color: '#475569', marginBottom: '15px'}}>Complete 6 orders to earn a FREE complementary item!</p>
         {progressInCycle === 0 && orderCount > 0 ? (
           <div className="reward-message">
@@ -67,7 +67,7 @@ const MyOrders = () => {
                   }
                 })}
               </p>
-              <p>${order.amount}.00</p>
+              <p>₹{order.amount}.00</p>
               <p>items: {order.items.length}</p>
               <p>
                 <span>&#x25cf;</span>
