@@ -63,8 +63,6 @@ const PlaceOrder = () => {
 
     const totalAmount = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    let orderData = {
-      address: "No address (Canteen Pickup)",
     const orderData = {
       items: orderItems,
       amount: totalAmount + 2, // ₹2 platform fee
