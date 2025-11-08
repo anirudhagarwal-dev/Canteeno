@@ -69,27 +69,17 @@ const PlaceOrder = () => {
       address: "Canteen Pickup", // simple static address
     };
 
-    let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
-    if (response.data.success) {
-      if (response.data.orderId) {
-        setOrderId(response.data.orderId);
-      }
-      setOrderPlaced(true);
-      toast.success("Order placed! Please scan the QR code to complete payment.");
-    } else {
-      toast.error("Something went wrong!");
     try {
-      const response = await axios.post(
-        `${url}/api/order/createOrder`, // ✅ correct endpoint
-        orderData,
-        { headers: { token } }
-      );
+      const response = await axios.post(`${url}/api/order/place`, orderData, { headers: { token } });
 
       if (response.data.success) {
-        toast.success("Order placed successfully!");
-        navigate("/myorders");
+        if (response.data.orderId) {
+          setOrderId(response.data.orderId);
+        }
+        setOrderPlaced(true);
+        toast.success("Order placed! Please scan the QR code to complete payment.");
       } else {
-        toast.error(response.data.message || "Something went wrong while placing order.");
+        toast.error(response.data.message || "Something went wrong!");
       }
     } catch (err) {
       console.error("Order placement failed:", err);
