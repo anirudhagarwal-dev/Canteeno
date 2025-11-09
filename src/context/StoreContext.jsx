@@ -1,22 +1,37 @@
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { food_list as localFoodList } from "../assets/frontend_assets/assets";
-import { fetchRecommendations } from "../config/recommendationApi";
-import { sendChatMessage, checkChatApiStatus } from "../config/chatApi";
 import axios from "axios";
+import {
+  fetchPopularItems,
+  fetchSimilarItems,
+  fetchMenu, 
+} from "../config/recommendationApi";
+import { sendChatMessage, checkChatApiStatus } from "../config/chatApi";
 
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
-  const url = "https://ajay-cafe-1.onrender.com";
+  const url = "https://ajay-cafe-1.onrender.com"; 
 
-  // --- State variables (define once only)
-  const [foodList, setFoodList] = useState([]);
+  const [foodList, setFoodList] = useState([]); 
+  const [menuList, setMenuList] = useState([]); 
   const [cartItems, setCartItems] = useState({});
   const [token, setToken] = useState("");
-  const [userType, setUserType] = useState("user"); // "user" or "admin"
+  const [userType, setUserType] = useState("user"); 
 
-  // --- Fetch food list ---
+  useEffect(() => {
+    const loadMenu = async () => {
+      const result = await fetchMenu();
+      if (result.success && result.data) {
+        setMenuList(result.data);
+        console.log("✅ Menu loaded from ML API:", result.data);
+      } else {
+        console.error("❌ Failed to load menu:", result.error);
+      }
+    };
+    loadMenu();
+  }, []);
+
   const fetchFoodList = async () => {
     try {
       const response = await axios.get(`${url}/api/foods/allFoods`);
@@ -31,7 +46,6 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // --- Load cart data ---
   const loadCardData = async (token) => {
     try {
       const response = await axios.post(
@@ -46,7 +60,6 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // --- Load data on mount ---
   useEffect(() => {
     async function loadData() {
       await fetchFoodList();
@@ -62,7 +75,6 @@ const StoreContextProvider = (props) => {
     loadData();
   }, []);
 
-  // --- Cart helper functions ---
   const getCartQuantity = (itemId) => {
     const item = cartItems[itemId];
     if (!item) return 0;
@@ -89,7 +101,6 @@ const StoreContextProvider = (props) => {
     });
   };
 
-  // --- Add to cart ---
   const addToCart = async (itemId, notes = "") => {
     setCartItems((prev) => {
       const currentItem = prev[itemId];
@@ -114,7 +125,7 @@ const StoreContextProvider = (props) => {
     if (token) {
       try {
         const response = await axios.post(
-          ` http://localhost:8080/api/cart/add`,
+          `${url}/api/cart/add`,
           { itemId },
           { headers: { token } }
         );
@@ -126,28 +137,28 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // --- Remove from cart ---
   const removeFromCart = async (itemId) => {
     setCartItems((prev) => {
       const currentItem = prev[itemId];
       if (!currentItem) return prev;
 
-      if (typeof currentItem === "number") {
-        const newQty = currentItem - 1;
-        if (newQty <= 0) {
-          const { [itemId]: _, ...rest } = prev;
-          return rest;
-        }
-        return { ...prev, [itemId]: newQty };
-      }
+      const newQty =
+        typeof currentItem === "number"
+          ? currentItem - 1
+          : currentItem.quantity - 1;
 
-      const newQty = currentItem.quantity - 1;
       if (newQty <= 0) {
         const { [itemId]: _, ...rest } = prev;
         return rest;
       }
 
-      return { ...prev, [itemId]: { ...currentItem, quantity: newQty } };
+      return {
+        ...prev,
+        [itemId]:
+          typeof currentItem === "number"
+            ? newQty
+            : { ...currentItem, quantity: newQty },
+      };
     });
 
     if (token) {
@@ -165,7 +176,6 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // --- Remove item completely ---
   const removeItemCompletely = async (itemId) => {
     if (!token) return toast.error("Please login first");
     try {
@@ -188,7 +198,6 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // --- Total calculation ---
   const getTotalCartAmount = () => {
     return Object.keys(cartItems).reduce((total, itemId) => {
       const itemInfo = foodList.find((f) => f._id === itemId);
@@ -206,7 +215,7 @@ const StoreContextProvider = (props) => {
 
   const contextValue = {
     url,
-    food_list: foodList,
+    food_list: menuList.length > 0 ? menuList : foodList, 
     cartItems,
     setCartItems,
     addToCart,
@@ -219,7 +228,8 @@ const StoreContextProvider = (props) => {
     setToken,
     userType,
     setUserType,
-    fetchRecommendations,
+    fetchPopularItems,
+    fetchSimilarItems,
     sendChatMessage,
     checkChatApiStatus,
     getTotalCartAmount,
