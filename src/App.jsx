@@ -3,9 +3,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import { StoreContext } from "./context/StoreContext";
 
 import Navbar from "./components/Navbar/Navbar";
-import Home from "./pages/Home/Home";
-import Cart from "./pages/cart/Cart";
-import PlaceOrder from "./pages/PlaceOrder/PlaceOrder";
+
 import Footer from "./components/Footer/Footer";
 import LoginPopup from "./components/LoginPopup/LoginPopup";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
