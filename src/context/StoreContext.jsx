@@ -4,21 +4,22 @@ import axios from "axios";
 import {
   fetchPopularItems,
   fetchSimilarItems,
-  fetchMenu, 
+  fetchMenu,
 } from "../config/recommendationApi";
 import { sendChatMessage, checkChatApiStatus } from "../config/chatApi";
 
 export const StoreContext = createContext(null);
 
-const StoreContextProvider = (props) => {
-  const url = "https://ajay-cafe-1.onrender.com"; 
+const StoreContextProvider = ({ children }) => {
+  const url = "https://ajay-cafe-1.onrender.com";
 
-  const [foodList, setFoodList] = useState([]); 
-  const [menuList, setMenuList] = useState([]); 
+  const [foodList, setFoodList] = useState([]);
+  const [menuList, setMenuList] = useState([]);
   const [cartItems, setCartItems] = useState({});
   const [token, setToken] = useState("");
-  const [userType, setUserType] = useState("user"); 
+  const [userType, setUserType] = useState("user");
 
+  // ===== Load menu from ML API =====
   useEffect(() => {
     const loadMenu = async () => {
       const result = await fetchMenu();
@@ -32,9 +33,10 @@ const StoreContextProvider = (props) => {
     loadMenu();
   }, []);
 
+  // ===== Fetch food list from backend =====
   const fetchFoodList = async () => {
     try {
-      const res = await axios.get("/api/foods/allFoods");
+      const res = await axios.get(`${url}/api/foods/allFoods`);
       if (res.data?.success) {
         setFoodList(res.data.data || []);
       } else {
@@ -46,9 +48,10 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // ===== Cart helpers (local) =====
+  // ===== Cart helpers =====
   const getCartQuantity = (id) => cartItems[id]?.quantity || 0;
   const getCartNotes = (id) => cartItems[id]?.notes || "";
+
   const setLocalQty = (id, qty, notes) => {
     setCartItems((prev) => {
       const next = { ...prev };
@@ -58,7 +61,6 @@ const StoreContextProvider = (props) => {
     });
   };
 
-  // normalize backend -> local map { [foodId]: {quantity, notes} }
   const normalizeCart = (data) => {
     const map = {};
     const items = data?.items || [];
@@ -70,11 +72,11 @@ const StoreContextProvider = (props) => {
     return map;
   };
 
-  // ===== Cart: load from backend =====
-  const loadCardData = async (jwt) => {
+  // ===== Load cart from backend =====
+  const loadCartData = async (jwt) => {
     if (!jwt) return;
     try {
-      const res = await axios.get("/api/cart/MyCart", {
+      const res = await axios.get(`${url}/api/cart/MyCart`, {
         headers: { Authorization: `Bearer ${jwt}` },
       });
       if (res.data?.success) {
@@ -88,7 +90,7 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // ===== Init =====
+  // ===== Initialize =====
   useEffect(() => {
     (async () => {
       await fetchFoodList();
@@ -97,12 +99,12 @@ const StoreContextProvider = (props) => {
         setToken(stored);
         const savedRole = localStorage.getItem("userType") || "user";
         setUserType(savedRole);
-        await loadCardData(stored);
+        await loadCartData(stored);
       }
     })();
   }, []);
 
-  // ===== Cart API actions (Bearer) =====
+  // ===== Cart API actions =====
   const addToCart = async (id, notes = "") => {
     const newQty = getCartQuantity(id) + 1;
     const prevNotes = getCartNotes(id);
@@ -110,16 +112,13 @@ const StoreContextProvider = (props) => {
 
     if (!token) return;
     try {
-      // backend expects absolute quantity or increment is okay?
-      // To be safe, we call /add with quantity 1 (increment on server),
-      // OR you can send newQty if your server overwrites.
       await axios.post(
-        "/api/cart/add",
+        `${url}/api/cart/add`,
         { foodId: id, quantity: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (e) {
-      setLocalQty(id, newQty - 1, prevNotes); // rollback
+      setLocalQty(id, newQty - 1, prevNotes);
       toast.error("Failed to add to cart");
     }
   };
@@ -135,12 +134,12 @@ const StoreContextProvider = (props) => {
     if (!token) return;
     try {
       await axios.put(
-        "/api/cart/updateCart",
+        `${url}/api/cart/updateCart`,
         { foodId: id, quantity: newQty },
         { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (e) {
-      setLocalQty(id, current, prevNotes); // rollback
+      setLocalQty(id, current, prevNotes);
       toast.error("Failed to update cart");
     }
   };
@@ -151,12 +150,12 @@ const StoreContextProvider = (props) => {
 
     if (!token) return toast.error("Please login first");
     try {
-      await axios.delete(`/api/cart/remove/${id}`, {
+      await axios.delete(`${url}/api/cart/remove/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Item removed");
     } catch (e) {
-      setLocalQty(id, backup?.quantity || 0, backup?.notes || ""); // rollback
+      setLocalQty(id, backup?.quantity || 0, backup?.notes || "");
       toast.error("Failed to remove item");
     }
   };
@@ -167,7 +166,7 @@ const StoreContextProvider = (props) => {
 
     if (!token) return;
     try {
-      await axios.delete("/api/cart/clear", {
+      await axios.delete(`${url}/api/cart/clear`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (e) {
@@ -187,7 +186,7 @@ const StoreContextProvider = (props) => {
   // ===== Totals =====
   const getTotalCartAmount = () =>
     Object.keys(cartItems).reduce((sum, id) => {
-      const info = food_list.find((f) => f._id === id);
+      const info = foodList.find((f) => f._id === id);
       return info ? sum + (info.price || 0) * (cartItems[id].quantity || 0) : sum;
     }, 0);
 
@@ -197,11 +196,9 @@ const StoreContextProvider = (props) => {
   // ===== Context value =====
   const contextValue = {
     url,
-    food_list: menuList.length > 0 ? menuList : foodList, 
+    food_list: menuList.length > 0 ? menuList : foodList,
     cartItems,
     setCartItems,
-
-    // cart helpers
     getCartQuantity,
     getCartNotes,
     updateCartNotes,
@@ -209,9 +206,8 @@ const StoreContextProvider = (props) => {
     removeFromCart,
     removeItemCompletely,
     clearCart,
-    
-
-    // auth / role
+    getTotalCartAmount,
+    getTotalCartItems,
     token,
     setToken,
     userType,
@@ -220,9 +216,7 @@ const StoreContextProvider = (props) => {
     fetchSimilarItems,
     sendChatMessage,
     checkChatApiStatus,
-    getTotalCartAmount,
-    getTotalCartItems,
-    loadCardData,
+    loadCartData,
   };
 
   return (
