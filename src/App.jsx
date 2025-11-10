@@ -1,6 +1,11 @@
-import React, { useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { StoreContext } from "./context/StoreContext";
+
 import Navbar from "./components/Navbar/Navbar";
+import Home from "./pages/Home/Home";
+import Cart from "./pages/cart/Cart";
+import PlaceOrder from "./pages/PlaceOrder/PlaceOrder";
 import Footer from "./components/Footer/Footer";
 import LoginPopup from "./components/LoginPopup/LoginPopup";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
@@ -17,6 +22,35 @@ import TrackOrder from "./pages/TrackOrder/TrackOrder";
 
 const App = () => {
   const [showLogin, setShowLogin] = useState(false);
+  const { userType, token } = useContext(StoreContext); // userType: "admin" | "customer" | ...
+
+  // -------- Inline Guards (use App scope so we can call setShowLogin) --------
+  const CustomerRoute = ({ children }) => {
+    // Not logged in → open login modal and push to home
+    if (!token) {
+      setShowLogin(true);
+      return <Navigate to="/" replace />;
+    }
+    // Admin trying to see customer pages → push to admin dashboard
+    if (userType === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
+    return children;
+  };
+
+  const AdminRoute = ({ children }) => {
+    // Not logged in → open login modal and push to home
+    if (!token) {
+      setShowLogin(true);
+      return <Navigate to="/" replace />;
+    }
+    // Non-admin trying to see admin pages → push to home
+    if (userType !== "admin") {
+      return <Navigate to="/" replace />;
+    }
+    return children;
+  };
+  // -------------------------------------------------------------------------
 
   return (
     <>
@@ -26,13 +60,63 @@ const App = () => {
         <ToastContainer />
 
         <Routes>
+          {/* Public */}
           <Route path="/" element={<Home />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/order" element={<PlaceOrder />} />
-          <Route path="/verify" element={<Verify />} />
-          <Route path="/myorders" element={<MyOrders />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/track/:orderId" element={<TrackOrder />} />
+
+          {/* Customer-only */}
+          <Route
+            path="/cart"
+            element={
+              <CustomerRoute>
+                <Cart />
+              </CustomerRoute>
+            }
+          />
+          <Route
+            path="/order"
+            element={
+              <CustomerRoute>
+                <PlaceOrder />
+              </CustomerRoute>
+            }
+          />
+          <Route
+            path="/verify"
+            element={
+              <CustomerRoute>
+                <Verify />
+              </CustomerRoute>
+            }
+          />
+          <Route
+            path="/myorders"
+            element={
+              <CustomerRoute>
+                <MyOrders />
+              </CustomerRoute>
+            }
+          />
+          <Route
+            path="/track/:orderId"
+            element={
+              <CustomerRoute>
+                <TrackOrder />
+              </CustomerRoute>
+            }
+          />
+
+          {/* Admin-only */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 
