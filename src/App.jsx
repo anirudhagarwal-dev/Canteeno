@@ -11,7 +11,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Home from "./pages/Home/Home";
-import Cart from "./pages/Cart/Cart";
+import Cart from "./pages/cart/Cart";
 import PlaceOrder from "./pages/PlaceOrder/PlaceOrder";
 import Verify from "./pages/Verify/Verify";
 import MyOrders from "./pages/MyOrders/MyOrders";
