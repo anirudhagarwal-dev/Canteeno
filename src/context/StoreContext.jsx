@@ -209,8 +209,7 @@ const StoreContextProvider = (props) => {
     removeFromCart,
     removeItemCompletely,
     clearCart,
-    getTotalCartAmount,
-    getTotalCartItems,
+    
 
     // auth / role
     token,
