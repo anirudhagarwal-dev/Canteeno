@@ -4,6 +4,7 @@ import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config.js";
 
 const AdminDashboard = () => {
   const { token, userType } = useContext(StoreContext);
@@ -17,11 +18,11 @@ const AdminDashboard = () => {
 
     try {
       setLoading(true);
-      // ✅ Correct endpoint
-      const res = await axios.get("/api/order/allOrders", {
+      const res = await axios.get(`${API_BASE_URL}/order/allOrders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log("response is here", res);
       if (res.data?.success && Array.isArray(res.data.data)) {
         const sorted = [...res.data.data].sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -41,13 +42,34 @@ const AdminDashboard = () => {
   const updateOrderStatus = async (orderId, newStatus) => {
     if (!token) return;
 
+    // console.log(`${API_BASE_URL}/order/status/${orderId}`);
     const headers = { Authorization: `Bearer ${token}` };
     const candidates = [
-      { method: "post", url: `/api/order/status/${orderId}`, body: { status: newStatus } },
-      { method: "put",  url: `/api/order/status/${orderId}`, body: { status: newStatus } },
-      { method: "patch",url: `/api/order/status/${orderId}`, body: { status: newStatus } },
-      { method: "put",  url: `/api/order/update/${orderId}`, body: { status: newStatus } },
-      { method: "patch",url: `/api/order/${orderId}/status`, body: { status: newStatus } },
+      {
+        method: "post",
+        url: `${API_BASE_URL}/order/status/${orderId}`,
+        body: { status: newStatus },
+      },
+      {
+        method: "put",
+        url: `${API_BASE_URL}/order/status/${orderId}`,
+        body: { status: newStatus },
+      },
+      {
+        method: "patch",
+        url: `${API_BASE_URL}/order/status/${orderId}`,
+        body: { status: newStatus },
+      },
+      {
+        method: "put",
+        url: `${API_BASE_URL}/order/update/${orderId}`,
+        body: { status: newStatus },
+      },
+      {
+        method: "patch",
+        url: `${API_BASE_URL}/order/${orderId}/status`,
+        body: { status: newStatus },
+      },
     ];
 
     let lastError = null;
@@ -57,11 +79,15 @@ const AdminDashboard = () => {
         if (res.data?.success) {
           toast.success(`Order marked as ${newStatus}`);
           setOrders((prev) =>
-            prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+            prev.map((o) =>
+              o._id === orderId ? { ...o, status: newStatus } : o
+            )
           );
           return;
         }
-        lastError = res?.data?.message || `Failed with ${c.method.toUpperCase()} ${c.url}`;
+        lastError =
+          res?.data?.message ||
+          `Failed with ${c.method.toUpperCase()} ${c.url}`;
       } catch (err) {
         lastError = err?.response?.data?.message || err?.message;
         // try the next shape
@@ -86,14 +112,14 @@ const AdminDashboard = () => {
     if (next) updateOrderStatus(orderId, next);
   };
 
-  useEffect(() => {
-    if (!token) return navigate("/");
-    if (userType !== "admin") return navigate("/");
+  // useEffect(() => {
+  //   if (!token) return navigate("/");
+  //   if (userType !== "admin") return navigate("/");
 
-    fetchOrders();
-    const id = setInterval(fetchOrders, 5000); // auto-refresh
-    return () => clearInterval(id);
-  }, [token, userType, navigate, fetchOrders]);
+  //   fetchOrders();
+  //   const id = setInterval(fetchOrders, 5000); // auto-refresh
+  //   return () => clearInterval(id);
+  // }, [token, userType, navigate, fetchOrders]);
 
   const filteredOrders = orders.filter((order) => {
     if (filterStatus === "all") return true;

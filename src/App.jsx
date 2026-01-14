@@ -54,6 +54,7 @@ const App = () => {
     <>
       {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <Navbar setShowLogin={setShowLogin} />
+      {showLogin && <LoginPopup setShowLogin={setShowLogin} />}
       <div className="app">
         <ToastContainer />
 
