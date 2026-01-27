@@ -12,9 +12,8 @@ const LoginPopup = ({ setShowLogin }) => {
 
   const navigate = useNavigate();
 
-  // ---------------- STATE ----------------
-  const [mode, setMode] = useState("login"); // login | signup (users only)
-  const [loginRole, setLoginRole] = useState("user"); // user | admin
+  const [mode, setMode] = useState("login");
+  const [loginRole, setLoginRole] = useState("user");
 
   const [data, setData] = useState({
     username: "",
@@ -23,7 +22,6 @@ const LoginPopup = ({ setShowLogin }) => {
     userId: "",
   });
 
-  // ---------------- HANDLERS ----------------
   const handleChange = (e) => {
     setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -34,7 +32,6 @@ const LoginPopup = ({ setShowLogin }) => {
     let endpoint = "";
     let body = {};
 
-    // ================= ADMIN (LOGIN ONLY) =================
     if (loginRole === "admin") {
       if (!data.userId || !data.password) {
         return toast.error("Admin ID and password required");
@@ -45,10 +42,7 @@ const LoginPopup = ({ setShowLogin }) => {
         userId: data.userId.trim(),
         password: data.password,
       };
-    }
-
-    // ================= USER =================
-    else {
+    } else {
       if (mode === "login") {
         if (!data.email || !data.password) {
           return toast.error("Email and password required");
@@ -60,7 +54,6 @@ const LoginPopup = ({ setShowLogin }) => {
           password: data.password,
         };
       } else {
-        // 🔐 USER SIGNUP (NO TOKEN EXPECTED)
         if (!data.username || !data.email || !data.password) {
           return toast.error("All fields are required");
         }
@@ -70,13 +63,13 @@ const LoginPopup = ({ setShowLogin }) => {
           username: data.username.trim(),
           email: data.email.trim(),
           password: data.password,
-          role: "user", // ✅ role fixed internally
+          role: "user",
         };
       }
     }
 
     try {
-      const res = await axios.post(endpoint, body);
+      const res = await axios.post(endpoint, body, { withCredentials: true });
 
       if (!res.data?.success) {
         return toast.error(res.data?.message || "Authentication failed");
@@ -84,14 +77,12 @@ const LoginPopup = ({ setShowLogin }) => {
 
       const payload = res.data.data || {};
 
-      // ---------------- SIGNUP FLOW ----------------
       if (loginRole === "user" && mode === "signup") {
         toast.success("Registration successful. Please login.");
         setMode("login");
         return;
       }
 
-      // ---------------- LOGIN FLOW ----------------
       const token = payload.accessToken || payload.token;
       if (!token) return toast.error("Authentication token missing");
 
@@ -120,7 +111,6 @@ const LoginPopup = ({ setShowLogin }) => {
     }
   };
 
-  // ---------------- UI ----------------
   return (
     <div className="login-popup">
       <div className="login-popup-container">

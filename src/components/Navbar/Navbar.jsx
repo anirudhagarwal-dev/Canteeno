@@ -4,6 +4,8 @@ import { assets } from "../../assets/frontend_assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
 import { toast } from "react-toastify";
+import { API_BASE_URL } from "../../config";
+import axios from "axios";
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("home");
@@ -11,13 +13,30 @@ const Navbar = ({ setShowLogin }) => {
     useContext(StoreContext);
   const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userType");
-    setToken("");
-    toast.success("Logout Successfully");
-    navigate("/");
+  const logout = async () => {
+    try {
+      await axios.post(
+        `${API_BASE_URL}/user/logout`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("userType");
+
+      setToken("");
+      toast.success("Logout Successfully");
+      navigate("/");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Logout failed");
+    }
   };
+
   return (
     <div className="navbar">
       <div className="navbar-content">
