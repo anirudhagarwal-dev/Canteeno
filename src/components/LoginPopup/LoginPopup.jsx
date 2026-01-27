@@ -15,6 +15,8 @@ const LoginPopup = ({ setShowLogin }) => {
   const [mode, setMode] = useState("login");
   const [loginRole, setLoginRole] = useState("user");
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const [data, setData] = useState({
     username: "",
     email: "",
@@ -32,10 +34,10 @@ const LoginPopup = ({ setShowLogin }) => {
     let endpoint = "";
     let body = {};
 
+    // --- ADMIN LOGIN ---
     if (loginRole === "admin") {
-      if (!data.userId || !data.password) {
+      if (!data.userId || !data.password)
         return toast.error("Admin ID and password required");
-      }
 
       endpoint = `${API_BASE_URL}/admin/login`;
       body = {
@@ -43,10 +45,10 @@ const LoginPopup = ({ setShowLogin }) => {
         password: data.password,
       };
     } else {
+      // --- USER LOGIN ---
       if (mode === "login") {
-        if (!data.email || !data.password) {
+        if (!data.email || !data.password)
           return toast.error("Email and password required");
-        }
 
         endpoint = `${API_BASE_URL}/user/login`;
         body = {
@@ -54,9 +56,9 @@ const LoginPopup = ({ setShowLogin }) => {
           password: data.password,
         };
       } else {
-        if (!data.username || !data.email || !data.password) {
+        // --- USER SIGNUP ---
+        if (!data.username || !data.email || !data.password)
           return toast.error("All fields are required");
-        }
 
         endpoint = `${API_BASE_URL}/user/register`;
         body = {
@@ -71,12 +73,12 @@ const LoginPopup = ({ setShowLogin }) => {
     try {
       const res = await axios.post(endpoint, body, { withCredentials: true });
 
-      if (!res.data?.success) {
+      if (!res.data?.success)
         return toast.error(res.data?.message || "Authentication failed");
-      }
 
       const payload = res.data.data || {};
 
+      // Signup completed — switch to login
       if (loginRole === "user" && mode === "signup") {
         toast.success("Registration successful. Please login.");
         setMode("login");
@@ -90,6 +92,7 @@ const LoginPopup = ({ setShowLogin }) => {
 
       setToken(token);
       setUserType(role);
+
       localStorage.setItem("token", token);
       localStorage.setItem("userType", role);
 
@@ -133,18 +136,27 @@ const LoginPopup = ({ setShowLogin }) => {
                 placeholder="Admin User ID"
                 required
               />
-              <input
-                type="password"
-                name="password"
-                value={data.password}
-                onChange={handleChange}
-                placeholder="Password"
-                required
-              />
+
+              {/* Password Field */}
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={data.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  required
+                />
+                <span
+                  className="eye-icon"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </span>
+              </div>
             </>
           ) : (
             <>
-              
               {mode === "signup" && (
                 <input
                   type="text"
@@ -165,14 +177,56 @@ const LoginPopup = ({ setShowLogin }) => {
                 required
               />
 
-              <input
-                type="password"
-                name="password"
-                value={data.password}
-                onChange={handleChange}
-                placeholder="Password"
-                required
-              />
+              {/* Password Field */}
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={data.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  required
+                />
+                <span
+                  className="eye-icon"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    // Eye Closed Icon
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-5.52 0-10-4-10-8 0-1.61.5-3.11 1.36-4.36" />
+                      <path d="M6.1 6.1A9.88 9.88 0 0 1 12 4c5.52 0 10 4 10 8 0 1.61-.5 3.11-1.36 4.36" />
+                      <line x1="2" y1="2" x2="22" y2="22" />
+                    </svg>
+                  ) : (
+                    // Eye Open Icon
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </span>
+              </div>
             </>
           )}
 
