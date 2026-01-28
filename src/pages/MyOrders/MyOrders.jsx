@@ -100,7 +100,14 @@ const MyOrders = () => {
                     <p className="item-qty">Qty: {item.quantity}</p>
                   </div>
 
-                  <p className="item-price">₹{item.food.price}</p>
+                  <div className="item-price">
+                    <p>
+                      {item.quantity} × {item.food.price}
+                    </p>
+                    <p className="item-total">
+                      ₹{item.quantity * item.food.price}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
