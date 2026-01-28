@@ -192,7 +192,7 @@ const LoginPopup = ({ setShowLogin }) => {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    // Eye Closed Icon
+                    //Eye Closed Icon
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="22"
@@ -209,7 +209,6 @@ const LoginPopup = ({ setShowLogin }) => {
                       <line x1="2" y1="2" x2="22" y2="22" />
                     </svg>
                   ) : (
-                    // Eye Open Icon
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="22"

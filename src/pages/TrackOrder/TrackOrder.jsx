@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { StoreContext } from "../../context/StoreContext";
 import "./TrackOrder.css";
+import { API_BASE_URL } from "../../config";
 
 const TrackOrder = () => {
   const { orderId } = useParams();
@@ -13,7 +14,7 @@ const TrackOrder = () => {
   // Fetch order details
   const fetchOrder = async () => {
     try {
-      const response = await axios.get(`${url}/api/order/${orderId}`, {
+      const response = await axios.get(`${API_BASE_URL}/order/${orderId}`, {
         headers: { token },
       });
       if (response.data.success) {
@@ -41,22 +42,31 @@ const TrackOrder = () => {
   // Define progress stages
   const stages = ["Pending", "Preparing", "Out for Delivery", "Delivered"];
   const currentStageIndex = stages.findIndex(
-    (s) => s.toLowerCase() === order.status.toLowerCase()
+    (s) => s.toLowerCase() === order.status.toLowerCase(),
   );
 
   return (
     <div className="track-order">
       <h2>Order Tracking</h2>
       <div className="order-info">
-        <p><strong>Order ID:</strong> {order._id}</p>
-        <p><strong>Total Amount:</strong> ₹{order.amount}</p>
-        <p><strong>Status:</strong> {order.status}</p>
+        <p>
+          <strong>Order ID:</strong> {order._id}
+        </p>
+        <p>
+          <strong>Total Amount:</strong> ₹{order.amount}
+        </p>
+        <p>
+          <strong>Status:</strong> {order.status}
+        </p>
       </div>
 
       {/* Progress Bar */}
       <div className="order-progress">
         {stages.map((stage, index) => (
-          <div key={index} className={`progress-step ${index <= currentStageIndex ? "active" : ""}`}>
+          <div
+            key={index}
+            className={`progress-step ${index <= currentStageIndex ? "active" : ""}`}
+          >
             <div className="step-circle">{index + 1}</div>
             <p>{stage}</p>
           </div>

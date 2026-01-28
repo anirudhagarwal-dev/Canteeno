@@ -4,20 +4,23 @@ import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 import { assets } from "../../assets/frontend_assets/assets";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 
 const MyOrders = () => {
-  const { url, token } = useContext(StoreContext);
+  const { token } = useContext(StoreContext);
   const [data, setData] = useState([]);
   const [orderCount, setOrderCount] = useState(0);
   const navigate = useNavigate();
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.post(
-        `${url}/api/order/userorders`,
-        {},
-        { headers: { token } }
-      );
+      const response = await axios.get(`${API_BASE_URL}/order/userorder`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+
       if (response.data.success) {
         setData(response.data.data);
         setOrderCount(response.data.data.length);
@@ -39,26 +42,24 @@ const MyOrders = () => {
   return (
     <div className="my-orders">
       <h2>Orders</h2>
-      
 
-      {/* 🎉 Loyalty Section */}
       <div className="loyalty-program">
         <h3>🎉 Foodie Rewards</h3>
         <p style={{ color: "#475569", marginBottom: "15px" }}>
           Complete 6 orders to earn a FREE complementary item!
         </p>
+
         {progressInCycle === 0 && orderCount > 0 ? (
           <div className="reward-message">
             <p>
-              🎁 <strong>Congratulations!</strong> You've earned a complementary
-              food item!
+              🎁 <strong>Congratulations!</strong> You've earned a free item!
             </p>
-            <p>Your next order will include a free item.</p>
+            <p>Your next order will include a complimentary item.</p>
           </div>
         ) : (
           <div className="reward-progress">
             <p>
-              Progress: {progressInCycle}/6 orders -{" "}
+              Progress: {progressInCycle}/6 —{" "}
               <strong>{ordersUntilFree} more order(s) until free item!</strong>
             </p>
             <div className="progress-bar">
@@ -71,25 +72,53 @@ const MyOrders = () => {
         )}
       </div>
 
-      {/* 🧾 Orders List */}
-      <div className="container">
-        {data.map((order, index) => (
-          <div key={index} className="my-orders-order">
-            <img src={assets.parcel_icon} alt="parcel" />
-            <p>
-              {order.items.map((item, i) =>
-                i === order.items.length - 1
-                  ? `${item.name} × ${item.quantity}`
-                  : `${item.name} × ${item.quantity}, `
-              )}
-            </p>
-            <p>₹{order.amount}.00</p>
-            <p>Items: {order.items.length}</p>
-            <p>
-              <span>&#x25cf;</span>
-              <b> {order.status}</b>
-            </p>
-            <button onClick={() => navigate(`/track/${order._id}`)}>
+      <div className="order-container">
+        {data.length === 0 && <p>No orders found.</p>}
+
+        {data.map((order) => (
+          <div key={order._id} className="order-card">
+            <div className="order-header">
+              <img
+                src={assets.parcel_icon}
+                className="parcel-icon"
+                alt="parcel"
+              />
+              <span>Order Id : {order._id}</span>
+            </div>
+
+            <div className="order-items">
+              {order.items.map((item, i) => (
+                <div key={i} className="order-item-row">
+                  <img
+                    src={item.food.image}
+                    className="order-food-img"
+                    alt="food"
+                  />
+
+                  <div className="item-info">
+                    <p className="item-name">{item.food.name}</p>
+                    <p className="item-qty">Qty: {item.quantity}</p>
+                  </div>
+
+                  <p className="item-price">₹{item.food.price}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="order-summary">
+              <p>
+                <strong>Total: </strong>₹{order.totalAmount}
+              </p>
+              <p>
+                <strong>Status: </strong>
+                <span className={`status ${order.status}`}>{order.status}</span>
+              </p>
+            </div>
+
+            <button
+              className="track-btn"
+              onClick={() => navigate(`/track/${order._id}`)}
+            >
               Track Order
             </button>
           </div>

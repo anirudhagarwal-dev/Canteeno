@@ -25,7 +25,7 @@ const PlaceOrder = () => {
 
   const fetchOrderCount = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/order/allOrders`, {
+      const response = await axios.get(`${API_BASE_URL}/order/allOrders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data.success) setOrderCount(response.data.data.length);
@@ -61,7 +61,7 @@ const PlaceOrder = () => {
 
     try {
       const res = await axios.post(
-        "/api/order/createOrder",
+        `${API_BASE_URL}/order/createOrder`,
         {
           items: orderItems,
           tableNumber: Number(tableNumber),
