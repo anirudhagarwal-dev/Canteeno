@@ -50,6 +50,7 @@
 .item-name {
   font-weight: 600;
 }
+
 .item-price {
   text-align: right;
 }
@@ -59,37 +60,59 @@
   margin-top: 3px;
 }
 
-.item-price {
-  font-weight: 600;
+.btn {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
 }
 
-.order-summary {
-  border-top: 1px solid #eee;
-  padding-top: 10px;
-  margin-top: 10px;
-  font-size: 16px;
+.btn button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  transition: 0.25s ease;
 }
 
 .track-btn {
-  margin-top: 15px;
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  background: #d96f32;
+  background: #2563eb;
   color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
 }
 
 .track-btn:hover {
-  opacity: 0.9;
+  background: #1e40af;
+  transform: translateY(-2px);
 }
 
+/* Delete Button */
+.delete-btn {
+  background: #dc2626;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .btn {
+    flex-direction: column;
+  }
+
+  .btn button {
+    width: 100%;
+  }
+}
+
+/* STATUS COLORS */
 .status {
   text-transform: capitalize;
 }
-
 .status.pending {
   color: orange;
 }
@@ -104,4 +127,11 @@
 }
 .status.cancelled {
   color: red;
+}
+
+.order-summary {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 16px;
 }

@@ -39,6 +39,27 @@ const MyOrders = () => {
   const progressInCycle = orderCount % 6;
   const ordersUntilFree = progressInCycle === 0 ? 6 : 6 - progressInCycle;
 
+  const deleteOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+
+    try {
+      const res = await axios.delete(
+        `${API_BASE_URL}/order/deleteOrder/${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (res.data.success) {
+        alert("Order deleted successfully!");
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Failed to delete order");
+    }
+  };
+
   return (
     <div className="my-orders">
       <h2>Orders</h2>
@@ -122,12 +143,20 @@ const MyOrders = () => {
               </p>
             </div>
 
-            <button
-              className="track-btn"
-              onClick={() => navigate(`/track/${order._id}`)}
-            >
-              Track Order
-            </button>
+            <div className="btn">
+              <button
+                className="track-btn"
+                onClick={() => navigate(`/track/${order._id}`)}
+              >
+                Track Order
+              </button>
+              <button
+                className="delete-btn"
+                onClick={() => deleteOrder(order._id)}
+              >
+                Cancel Order
+              </button>
+            </div>
           </div>
         ))}
       </div>
