@@ -4,86 +4,116 @@ import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 
 const PlaceOrder = () => {
   const navigate = useNavigate();
-  const { getTotalCartAmount, token, food_list, cartItems, getCartQuantity, getCartNotes } =
+  const { getTotalCartAmount, token, food_list, getCartQuantity } =
     useContext(StoreContext);
 
-  const [orderCount, setOrderCount] = useState(0);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [tableNumber, setTableNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
-  // ✅ Fetch order history count
-  const fetchOrderCount = async () => {
+  // Build formatted items
+  const buildOrderItems = () => {
+    let orderItems = [];
+    food_list.forEach((item) => {
+      const qty = getCartQuantity(item._id);
+      if (qty > 0) orderItems.push({ foodId: item._id, quantity: qty });
+    });
+    return orderItems;
+  };
+
+  // Create Razorpay order on backend
+  const createBackendOrder = async () => {
+    const res = await axios.post(
+      `${API_BASE_URL}/payment/create`,
+      {
+        amount: getTotalCartAmount() + 2,
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+
+    return res.data.data; // { order, payment }
+  };
+
+  const handleUPIPayment = async (event) => {
+    event.preventDefault();
+
+    if (!tableNumber) return toast.error("Please enter a table number");
+
+    const orderData = await createBackendOrder();
+    const razorpayOrder = orderData.order;
+
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY,
+      amount: razorpayOrder.amount,
+      currency: "INR",
+      name: "Ajay Cafe",
+      description: "Order Payment",
+      order_id: razorpayOrder.id,
+
+      handler: async function (response) {
+        toast.success("Payment Success! Confirming order…");
+
+        const verify = await axios.post(
+          `${API_BASE_URL}/payment/verify`,
+          {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        if (verify.data.success) {
+          placeFinalOrder("upi"); // 🎉 Correct!
+        } else {
+          toast.error("Payment verification failed");
+        }
+      },
+
+      theme: { color: "#D96F32" },
+    };
+
+    new window.Razorpay(options).open();
+  };
+
+  // Create final order in your backend
+  const placeFinalOrder = async (method) => {
+    const orderItems = buildOrderItems();
+
     try {
-      const response = await axios.get("/api/order/allOrders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.data.success) setOrderCount(response.data.data.length);
-    } catch {
-      console.log("Could not fetch previous orders");
+      const res = await axios.post(
+        `${API_BASE_URL}/order/createOrder`,
+        {
+          items: orderItems,
+          tableNumber: Number(tableNumber),
+          paymentMethod: method,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (res.data.success) {
+        setOrderId(res.data.data._id);
+        setOrderPlaced(true);
+      }
+    } catch (error) {
+      toast.error("Error placing final order");
     }
   };
 
   const placeOrder = async (event) => {
     event.preventDefault();
 
-    if (!tableNumber) return toast.error("Please enter a table number");
-    if (!token) return toast.error("Please Login first");
-    if (getTotalCartAmount() === 0) return toast.error("Your cart is empty");
+    if (paymentMethod === "upi") return handleUPIPayment(event);
 
-    // ✅ Convert cart → backend format
-    let orderItems = [];
-    food_list.forEach((item) => {
-      const quantity = getCartQuantity(item._id);
-      const notes = getCartNotes(item._id);
-      if (quantity > 0) {
-        orderItems.push({ foodId: item._id, quantity });
-      }
-    });
-
-    // ✅ FREE ITEM ON EVERY 6TH ORDER
-    const isComplementaryOrder = orderCount % 6 === 5;
-    if (isComplementaryOrder && orderItems.length > 0) {
-      const cheapest = [...orderItems].sort((a, b) => a.price - b.price)[0];
-      toast.success("🎉 Free complementary item added to your order!");
-      // Backend will calculate total amount anyway
-    }
-
-    try {
-      const res = await axios.post(
-        "/api/order/createOrder",
-        {
-          items: orderItems,
-          tableNumber: Number(tableNumber),
-          paymentMethod,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (res.data.success) {
-        setOrderId(res.data.data._id);
-        setOrderPlaced(true);
-        toast.success("Order placed successfully ✅");
-      } else {
-        toast.error(res.data.message || "Failed to place order");
-      }
-    } catch (err) {
-      console.log(err);
-      toast.error("Server error while placing order");
-    }
+    return placeFinalOrder("cash");
   };
 
-  useEffect(() => {
-    if (token) fetchOrderCount();
-  }, [token]);
-
-  // ✅ Payment Screen UI after order placed
+  // SUCCESS SCREEN
   if (orderPlaced) {
     return (
       <div className="place-order">
@@ -93,7 +123,7 @@ const PlaceOrder = () => {
             <p>Order ID: {orderId}</p>
 
             <p className="payment-instruction">
-              Please go to the counter or wait for preparation updates.
+              Please wait while we prepare your food 🍽️
             </p>
 
             <button
@@ -115,28 +145,20 @@ const PlaceOrder = () => {
         <div className="cart-total">
           <h2>Your Cart Total</h2>
 
-          {orderCount % 6 === 5 && (
-            <div className="loyalty-notification">
-              <p>🎉 <strong>You're eligible for a free item!</strong></p>
-            </div>
-          )}
-
           <div className="cart-total-details">
             <p>Subtotal</p>
             <p>₹{getTotalCartAmount()}</p>
           </div>
 
           <div className="cart-total-details">
-            <p>Canteeno Platform Fee</p>
+            <p>Platform Fee</p>
             <p>₹{getTotalCartAmount() === 0 ? 0 : 2}</p>
           </div>
 
           <div className="cart-total-details">
             <b>Total</b>
-            <b>₹{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}</b>
+            <b>₹{getTotalCartAmount() + 2}</b>
           </div>
-
-          <br />
 
           <label>Table Number</label>
           <input
@@ -147,10 +169,22 @@ const PlaceOrder = () => {
           />
 
           <label>Payment Method</label>
-          <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+          <select
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
             <option value="cash">Cash</option>
             <option value="upi">UPI</option>
           </select>
+
+          {paymentMethod === "upi" && (
+            <div className="upi-box">
+              <p className="upi-title">📲 Pay with UPI</p>
+              <p className="upi-sub">
+                A Razorpay UPI QR popup will open for payment.
+              </p>
+            </div>
+          )}
 
           <button type="submit">PLACE ORDER</button>
         </div>

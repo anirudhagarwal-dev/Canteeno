@@ -3,73 +3,117 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { StoreContext } from "../../context/StoreContext";
 import "./TrackOrder.css";
+import { API_BASE_URL } from "../../config";
+import { io } from "socket.io-client";
+
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+
+const socket = io(API_BASE_URL);
 
 const TrackOrder = () => {
   const { orderId } = useParams();
-  const { url, token } = useContext(StoreContext);
+  const { token } = useContext(StoreContext);
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [riderLocation, setRiderLocation] = useState({
+    lat: 28.6139,
+    lng: 77.209,
+  });
 
-  // Fetch order details
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: "GOOGLE_MAPS_KEY",
+  });
+
   const fetchOrder = async () => {
     try {
-      const response = await axios.get(`${url}/api/order/${orderId}`, {
-        headers: { token },
+      const res = await axios.get(`${API_BASE_URL}/order/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (response.data.success) {
-        setOrder(response.data.data);
-      }
+
+      if (res.data.success) setOrder(res.data.data);
     } catch (err) {
-      console.error("Error fetching order:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-refresh every 10 seconds
   useEffect(() => {
-    if (token) {
-      fetchOrder();
-      const interval = setInterval(fetchOrder, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [orderId, token, url]);
+    fetchOrder();
 
-  if (loading) return <p className="track-loading">Loading order details...</p>;
-  if (!order) return <p className="track-error">Order not found or expired.</p>;
+    // LIVE STATUS UPDATE
+    socket.on(`order-${orderId}-status`, (data) => {
+      setOrder((prev) => ({ ...prev, status: data.status }));
+    });
 
-  // Define progress stages
-  const stages = ["Pending", "Preparing", "Out for Delivery", "Delivered"];
-  const currentStageIndex = stages.findIndex(
-    (s) => s.toLowerCase() === order.status.toLowerCase()
-  );
+    // LIVE LOCATION UPDATE
+    socket.on(`order-${orderId}-location`, (loc) => {
+      setRiderLocation(loc);
+    });
+
+    return () => {
+      socket.off(`order-${orderId}-status`);
+      socket.off(`order-${orderId}-location`);
+    };
+  }, [orderId]);
+
+  if (loading) return <p className="track-loading">Loading order...</p>;
+  if (!order) return <p className="track-error">Order not found.</p>;
+
+  const stages = ["pending", "preparing", "ready", "delivered"];
+  const currentStage = stages.indexOf(order.status);
 
   return (
     <div className="track-order">
-      <h2>Order Tracking</h2>
+      <h2>Track Your Order</h2>
+
       <div className="order-info">
-        <p><strong>Order ID:</strong> {order._id}</p>
-        <p><strong>Total Amount:</strong> ₹{order.amount}</p>
-        <p><strong>Status:</strong> {order.status}</p>
+        <p>
+          <strong>Order ID:</strong> {order._id}
+        </p>
+        <p>
+          <strong>Total Amount:</strong> ₹{order.totalAmount}
+        </p>
+        <p>
+          <strong>Status:</strong>{" "}
+          <span className="status-blink">{order.status}</span>
+        </p>
       </div>
 
-      {/* Progress Bar */}
       <div className="order-progress">
         {stages.map((stage, index) => (
-          <div key={index} className={`progress-step ${index <= currentStageIndex ? "active" : ""}`}>
-            <div className="step-circle">{index + 1}</div>
-            <p>{stage}</p>
+          <div
+            key={index}
+            className={`progress-step ${index <= currentStage ? "active" : ""}`}
+          >
+            <div className="step-circle"></div>
+            <p>{stage.toUpperCase()}</p>
           </div>
         ))}
       </div>
 
-      {/* Items List */}
+      <h3>Delivery Location</h3>
+      {isLoaded && (
+        <GoogleMap
+          center={riderLocation}
+          zoom={16}
+          mapContainerStyle={{
+            height: "300px",
+            width: "100%",
+            borderRadius: "12px",
+          }}
+        >
+          <Marker position={riderLocation} />
+        </GoogleMap>
+      )}
       <div className="order-items">
-        <h3>Ordered Items</h3>
+        <h3>Your Items</h3>
         <ul>
           {order.items.map((item, idx) => (
             <li key={idx}>
-              {item.name} × {item.quantity}
+              {item.food.name} × {item.quantity} ={" "}
+              <strong>₹{item.quantity * item.price}</strong>
             </li>
           ))}
         </ul>
