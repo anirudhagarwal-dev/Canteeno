@@ -338,7 +338,7 @@ We welcome contributions! Please follow these steps:
         <sub><b>Amresh Chaurasiya</b></sub>
       </a>
       <br />
-      <sub>Project Lead & Backend Developer</sub>
+      <sub>Backend Developer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/anirudhagarwal-dev">
@@ -365,7 +365,7 @@ We welcome contributions! Please follow these steps:
         <sub><b>Vaibhav Shukla</b></sub>
       </a>
       <br />
-      <sub>UI/UX Designer and Frontend Developer</sub>
+      <sub>Frontend Developer</sub>
     </td>
     <td align="center">
       <a href="https://github.com/UtkarshSingh-creater">
@@ -374,7 +374,7 @@ We welcome contributions! Please follow these steps:
         <sub><b>Utkarsh Singh</b></sub>
       </a>
       <br />
-      <sub>UI/UX Designer and Frontend Developer<</sub>
+      <sub>Frontend Developer<</sub>
     </td>
   </tr>
 </table>
@@ -399,16 +399,6 @@ We welcome contributions! Please follow these steps:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 📞 Contact
-
-**Amresh Kumar**
-- GitHub: [@Amresh-01](https://github.com/Amresh-01)
-- Email: your.email@example.com
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- Portfolio: [yourportfolio.com](https://yourportfolio.com)
 
 ---
 
